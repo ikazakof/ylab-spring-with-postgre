@@ -1,0 +1,24 @@
+swagger-api:
+  version: "1.0"
+
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  datasource:
+    url: jdbc:h2:mem:userbook
+    username: test
+    password: test
+
+server:
+  port: 8091
+  servlet:
+    context-path: /app
+management:
+  security:
+    enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health,info
