@@ -1,33 +1,34 @@
 package com.edu.ulab.app.service.impl;
 
 import com.edu.ulab.app.dto.UserDto;
+import com.edu.ulab.app.entity.Person;
+import com.edu.ulab.app.mapper.UserMapper;
 import com.edu.ulab.app.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Objects;
 
 @Slf4j
 @Service
 public class UserServiceImplTemplate implements UserService {
     private final JdbcTemplate jdbcTemplate;
+    private final UserMapper userMapper;
 
-    public UserServiceImplTemplate(JdbcTemplate jdbcTemplate) {
+    public UserServiceImplTemplate(JdbcTemplate jdbcTemplate, UserMapper userMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.userMapper = userMapper;
     }
 
     @Override
     public UserDto createUser(UserDto userDto) {
-
         final String INSERT_SQL = "INSERT INTO PERSON(FULL_NAME, TITLE, AGE) VALUES (?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
+
         jdbcTemplate.update(
                 connection -> {
                     PreparedStatement ps = connection.prepareStatement(INSERT_SQL, new String[]{"id"});
@@ -38,23 +39,64 @@ public class UserServiceImplTemplate implements UserService {
                 }, keyHolder);
 
         userDto.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        log.info("Saved user: {}", userDto);
         return userDto;
     }
 
     @Override
-    public UserDto updateUser(UserDto userDto) {
-        // реализовать недстающие методы
-        return null;
+    public boolean userIdExist(Long userId) {
+        final String SELECT_USER_SQL = "SELECT count(*) FROM PERSON WHERE id = ?";
+        Long counter = jdbcTemplate.queryForObject(SELECT_USER_SQL, Long.class, userId);
+
+        boolean userExist = counter != null && counter != 0;
+        log.info("User with id:{} exist - {}", userId, userExist);
+
+        return userExist;
     }
 
     @Override
+    public UserDto updateUser(UserDto userDto) {
+        Person personFromDB = userMapper.userDtoToPerson(getUserById(userDto.getId()));
+        log.info("Mapped user: {}", personFromDB);
+
+        Person personAfterUpdateByDto = userMapper.getPersonUpdatedByDto(userDto, personFromDB);
+        log.info("Mapped user for update: {}", personAfterUpdateByDto);
+
+        final String UPDATE_SQL = "UPDATE PERSON SET full_name = ?, title = ?, age = ? WHERE id = ?";
+
+        jdbcTemplate.update(UPDATE_SQL, personAfterUpdateByDto.getFullName(), personAfterUpdateByDto.getTitle(),
+                personAfterUpdateByDto.getAge(), userDto.getId());
+        log.info("Updated user : {}", personAfterUpdateByDto);
+
+        return userMapper.personToUserDto(personAfterUpdateByDto);
+    }
+
+
+    @Override
     public UserDto getUserById(Long id) {
-        // реализовать недстающие методы
-        return null;
+        final String SELECT_SQL = "SELECT * FROM PERSON WHERE id = ?";
+
+        UserDto userDtoResult = jdbcTemplate.queryForObject(
+                SELECT_SQL,
+                (rs, rowNum) -> {
+                    UserDto userDto = new UserDto();
+                    userDto.setId(rs.getLong("id"));
+                    userDto.setFullName(rs.getString("full_name"));
+                    userDto.setTitle(rs.getString("title"));
+                    userDto.setAge(rs.getInt("age"));
+                    return userDto;
+                },
+                id);
+
+        log.info("User got from DB: {}", userDtoResult);
+
+        return userDtoResult;
     }
 
     @Override
     public void deleteUserById(Long id) {
-        // реализовать недстающие методы
+        final String DELETE_SQL = "DELETE FROM PERSON WHERE id = ?";
+        jdbcTemplate.update(DELETE_SQL, id);
+        log.info("User with ID: {} deleted from DB", id);
     }
 }
