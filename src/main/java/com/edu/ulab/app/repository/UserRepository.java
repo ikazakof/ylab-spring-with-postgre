@@ -4,10 +4,13 @@ import com.edu.ulab.app.entity.Person;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.persistence.LockModeType;
+import javax.persistence.Table;
 import java.util.Optional;
-
+@Repository
+@Table(name = "person")
 public interface UserRepository extends CrudRepository<Person, Long> {
 
     /*
