@@ -26,7 +26,7 @@ public class UserServiceImplTemplate implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        final String INSERT_SQL = "INSERT INTO PERSON(FULL_NAME, TITLE, AGE) VALUES (?,?,?)";
+        final String INSERT_SQL = "INSERT INTO ulab_edu.PERSON(FULL_NAME, TITLE, AGE) VALUES (?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(
@@ -45,7 +45,7 @@ public class UserServiceImplTemplate implements UserService {
 
     @Override
     public boolean userIdExist(Long userId) {
-        final String SELECT_USER_SQL = "SELECT count(*) FROM PERSON WHERE id = ?";
+        final String SELECT_USER_SQL = "SELECT count(*) FROM ulab_edu.PERSON WHERE id = ?";
         Long counter = jdbcTemplate.queryForObject(SELECT_USER_SQL, Long.class, userId);
 
         boolean userExist = counter != null && counter != 0;
@@ -62,7 +62,7 @@ public class UserServiceImplTemplate implements UserService {
         Person personAfterUpdateByDto = userMapper.getPersonUpdatedByDto(userDto, personFromDB);
         log.info("Mapped user for update: {}", personAfterUpdateByDto);
 
-        final String UPDATE_SQL = "UPDATE PERSON SET full_name = ?, title = ?, age = ? WHERE id = ?";
+        final String UPDATE_SQL = "UPDATE ulab_edu.PERSON SET full_name = ?, title = ?, age = ? WHERE id = ?";
 
         jdbcTemplate.update(UPDATE_SQL, personAfterUpdateByDto.getFullName(), personAfterUpdateByDto.getTitle(),
                 personAfterUpdateByDto.getAge(), userDto.getId());
@@ -74,7 +74,7 @@ public class UserServiceImplTemplate implements UserService {
 
     @Override
     public UserDto getUserById(Long id) {
-        final String SELECT_SQL = "SELECT * FROM PERSON WHERE id = ?";
+        final String SELECT_SQL = "SELECT * FROM ulab_edu.PERSON WHERE id = ?";
 
         UserDto userDtoResult = jdbcTemplate.queryForObject(
                 SELECT_SQL,
@@ -95,7 +95,7 @@ public class UserServiceImplTemplate implements UserService {
 
     @Override
     public void deleteUserById(Long id) {
-        final String DELETE_SQL = "DELETE FROM PERSON WHERE id = ?";
+        final String DELETE_SQL = "DELETE FROM ulab_edu.PERSON WHERE id = ?";
         jdbcTemplate.update(DELETE_SQL, id);
         log.info("User with ID: {} deleted from DB", id);
     }

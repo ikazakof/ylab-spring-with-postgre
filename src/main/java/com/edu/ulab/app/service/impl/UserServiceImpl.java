@@ -2,7 +2,6 @@ package com.edu.ulab.app.service.impl;
 
 import com.edu.ulab.app.dto.UserDto;
 import com.edu.ulab.app.entity.Person;
-import com.edu.ulab.app.exception.NotFoundException;
 import com.edu.ulab.app.mapper.UserMapper;
 import com.edu.ulab.app.repository.UserRepository;
 import com.edu.ulab.app.service.UserService;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
-    //Todo выбрасывать ли NoSuchElementException при условии того, что он не может появиться?
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
@@ -39,12 +37,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateUser(UserDto userDto) throws NotFoundException {
+    public UserDto updateUser(UserDto userDto) {
         Person personFromDB = userRepository.findById(userDto.getId()).orElse(new Person());
-        if (personFromDB.getId() == null) {
-            log.info("User with id: {} does not exist ", userDto.getId());
-            throw new NotFoundException("User with input id does not exist");
-        }
         Person updatedPerson = userMapper.getPersonUpdatedByDto(userDto, personFromDB);
         log.info("Mapped user for update: {}", updatedPerson);
 
@@ -55,12 +49,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUserById(Long id) throws NotFoundException {
+    public UserDto getUserById(Long id) {
         UserDto userDto = userMapper.personToUserDto(userRepository.findById(id).orElse(new Person()));
-        if (userDto.getId() == null) {
-            log.info("User does not exist with input id: {}", id);
-            throw new NotFoundException("User with input id does not exist");
-        }
         log.info("User got from DB: {}", userDto);
         return userDto;
     }
