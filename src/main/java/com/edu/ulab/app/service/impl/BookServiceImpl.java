@@ -2,17 +2,18 @@ package com.edu.ulab.app.service.impl;
 
 import com.edu.ulab.app.dto.BookDto;
 import com.edu.ulab.app.entity.Book;
-import com.edu.ulab.app.exception.NotFoundException;
 import com.edu.ulab.app.mapper.BookMapper;
 import com.edu.ulab.app.repository.BookRepository;
 import com.edu.ulab.app.service.BookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Objects;
+
 @Slf4j
 @Service
 public class BookServiceImpl implements BookService {
-    //Todo выбрасывать ли NoSuchElementException при условии того, что он не может появиться?
     private final BookRepository bookRepository;
 
     private final BookMapper bookMapper;
@@ -33,19 +34,20 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public boolean bookIdExist(Long bookId) {
+    public boolean bookIdExist(long bookId) {
         boolean bookExist = bookRepository.existsById(bookId);
         log.info("Book with id:{} exist - {}", bookId, bookExist);
         return bookExist;
     }
 
     @Override
-    public BookDto updateBook(BookDto bookDto) throws NotFoundException {
+    public boolean anyBooksWithUserIdExist(long userId) {
+        return bookRepository.existsBookByUserId(userId);
+    }
+
+    @Override
+    public BookDto updateBook(BookDto bookDto) {
         Book bookFromDB = bookRepository.findById(bookDto.getId()).orElse(new Book());
-        if (bookFromDB.getId() == null) {
-            log.info("User with id: {} does not exist ", bookDto.getId());
-            throw new NotFoundException("User with input id does not exist");
-        }
 
         Book updatedBook = bookMapper.getBookUpdatedByDto(bookDto, bookFromDB);
         log.info("Mapped book for update: {}", updatedBook);
@@ -57,21 +59,29 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookDto getBookById(Long id) throws NotFoundException {
+    public BookDto getBookById(long id) {
         BookDto bookDto = bookMapper.bookToBookDto(bookRepository.findById(id).orElse(new Book()));
-        if (bookDto.getId() == null) {
-            log.info("User with id: {} does not exist ", bookDto.getId());
-            throw new NotFoundException("User with input id does not exist");
-        }
-
         log.info("Book got from DB: {}", bookDto);
         return bookDto;
     }
 
+    @Override
+    public List<Long> getBooksIdsByUserId(long userId) {
+        return bookRepository.findBooksByUserId(userId)
+                .stream()
+                .filter(Objects::nonNull)
+                .map(Book::getId)
+                .toList();
+    }
 
     @Override
-    public void deleteBookById(Long id) {
-        bookRepository.deleteById(id);
-        log.info("Book with ID: {} deleted from DB", id);
+    public void deleteBooksByUserId(long userId) {
+        bookRepository.deleteAllByUserId(userId);
+    }
+
+    @Override
+    public void deleteBookById(long bookId) {
+        bookRepository.deleteById(bookId);
+        log.info("Book with ID: {} deleted from DB", bookId);
     }
 }

@@ -1,14 +1,11 @@
 package com.edu.ulab.app.facade;
 
 import com.edu.ulab.app.dto.BookDto;
-import com.edu.ulab.app.dto.UserBookDto;
 import com.edu.ulab.app.dto.UserDto;
 import com.edu.ulab.app.exception.*;
 import com.edu.ulab.app.mapper.BookMapper;
 import com.edu.ulab.app.mapper.UserMapper;
 import com.edu.ulab.app.service.impl.BookServiceImplTemplate;
-import com.edu.ulab.app.service.impl.UserBookServiceImplTemplate;
-import com.edu.ulab.app.service.impl.UserServiceImpl;
 import com.edu.ulab.app.service.impl.UserServiceImplTemplate;
 import com.edu.ulab.app.web.request.UserBookRequest;
 import com.edu.ulab.app.web.request.UserBooksWithIdRequest;
@@ -18,26 +15,23 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @Slf4j
 @Component
 public class UserDataFacade {
-    private final UserServiceImpl userService;
+    private final UserServiceImplTemplate userService;
     private final BookServiceImplTemplate bookService;
-    private final UserBookServiceImplTemplate userBookService;
+
     private final UserMapper userMapper;
     private final BookMapper bookMapper;
 
-    public UserDataFacade(UserServiceImpl userService,
+    public UserDataFacade(UserServiceImplTemplate userService,
                           BookServiceImplTemplate bookService,
-                          UserBookServiceImplTemplate userBookService,
                           UserMapper userMapper,
                           BookMapper bookMapper) {
         this.userService = userService;
         this.bookService = bookService;
-        this.userBookService = userBookService;
         this.userMapper = userMapper;
         this.bookMapper = bookMapper;
     }
@@ -65,11 +59,9 @@ public class UserDataFacade {
                 .map(bookService::createBook)
                 .peek(createdBook -> log.info("Created book: {}", createdBook))
                 .map(BookDto::getId)
-                .peek(bookId -> userBookService.savePersonBook(new UserBookDto(createdUser.getId(), bookId)))
                 .toList();
         log.info("Collected book ids: {}", bookIdList);
 
-        log.info("Created PersonBooks links");
 
         return UserBookResponse.builder()
                 .userId(createdUser.getId())
@@ -99,7 +91,6 @@ public class UserDataFacade {
                 .peek(bookDto -> {
                     if (bookDto.getId() == null) {
                         bookDto.setId(bookService.createBook(bookDto).getId());
-                        userBookService.savePersonBook(new UserBookDto(updatedUser.getId(), bookDto.getId()));
                     } else {
                         bookService.updateBook(bookDto);
                     }
@@ -127,7 +118,7 @@ public class UserDataFacade {
         UserDto searchUser = userService.getUserById(userId);
         log.info("Searched user: {}", searchUser);
 
-        List<Long> booksIds = userBookService.getBooksIdListByUserId(searchUser.getId());
+        List<Long> booksIds = bookService.getBooksIdsByUserId(userId);
         log.info("Searched booksIds: {}", booksIds);
 
         return UserBookResponse.builder()
@@ -152,23 +143,11 @@ public class UserDataFacade {
             log.info("User with id: {} - deleted ", userId);
         }
 
-        userBookService.getBooksIdListByUserId(userId)
-                .forEach(bookId -> {
-                    bookService.deleteBookById(bookId);
-                    if (bookService.bookIdExist(bookId)) {
-                        log.info("Book does not deleted: {}", bookId);
-                        throw new UserDoesNotDeletedException("Book does not deleted");
-                    }
-                });
-
-        log.info("All books deleted successfully");
-
-        userBookService.deletePersonBookByUserId(userId);
-
-        if (userBookService.existBookByPersonId(userId)) {
-            log.info("UserBooks does not deleted by userId: {}", userId);
-            throw new UserBooksDoesNotDeletedException("UserBooks does not deleted by userId");
+        bookService.deleteBooksByUserId(userId);
+        if (bookService.anyBooksWithUserIdExist(userId)) {
+            log.info("Books by User id does not deleted");
+        } else {
+            log.info("All books deleted successfully");
         }
-
     }
 }

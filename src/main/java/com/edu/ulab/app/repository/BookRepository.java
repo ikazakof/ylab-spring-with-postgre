@@ -8,7 +8,9 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.LockModeType;
 import javax.persistence.Table;
+import java.util.List;
 import java.util.Optional;
+
 @Repository
 @Table(name = "book")
 public interface BookRepository extends CrudRepository<Book, Long> {
@@ -16,4 +18,10 @@ public interface BookRepository extends CrudRepository<Book, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select b from Book b where b.id = :id")
     Optional<Book> findByIdForUpdate(long id);
+
+    List<Book> findBooksByUserId(long userId);
+
+    void deleteAllByUserId(long userId);
+
+    boolean existsBookByUserId(long userId);
 }
