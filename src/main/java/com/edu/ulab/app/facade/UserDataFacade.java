@@ -6,6 +6,7 @@ import com.edu.ulab.app.exception.*;
 import com.edu.ulab.app.mapper.BookMapper;
 import com.edu.ulab.app.mapper.UserMapper;
 import com.edu.ulab.app.service.impl.BookServiceImpl;
+
 import com.edu.ulab.app.service.impl.BookServiceImplTemplate;
 import com.edu.ulab.app.service.impl.UserServiceImpl;
 import com.edu.ulab.app.service.impl.UserServiceImplTemplate;
@@ -151,7 +152,5 @@ public class UserDataFacade {
         } else {
             log.info("User with id: {} - deleted ", userId);
         }
-
-
     }
 }

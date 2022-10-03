@@ -27,11 +27,8 @@ public class UserServiceImplTemplate implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        final String GET_SEQUENCE_NEXTVAL = "SELECT nextval('sequence')";
-
-
-
         final String INSERT_SQL = "INSERT INTO ulab_edu.PERSON(ID, FULL_NAME, TITLE, AGE) VALUES (nextval('ulab_edu.sequence'),?,?,?)";
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(

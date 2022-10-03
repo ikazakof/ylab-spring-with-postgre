@@ -24,4 +24,5 @@ public interface BookRepository extends CrudRepository<Book, Long> {
     void deleteAllByPerson_Id(long userId);
 
     boolean existsBookByPerson_Id(long userId);
+
 }
