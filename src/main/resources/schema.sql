@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS ulab_edu.person;
+/*DROP TABLE IF EXISTS ulab_edu.person;
 DROP TABLE IF EXISTS ulab_edu.book;
 DROP SCHEMA IF EXISTS ulab_edu;
 CREATE SCHEMA ulab_edu;
@@ -19,3 +19,4 @@ CREATE TABLE IF NOT EXISTS ulab_edu.book
     PAGE_COUNT INTEGER NOT NULL ,
     USER_ID BIGINT
 );
+*/

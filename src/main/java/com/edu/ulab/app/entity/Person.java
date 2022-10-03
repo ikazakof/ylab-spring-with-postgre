@@ -1,24 +1,39 @@
 package com.edu.ulab.app.entity;
 
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 
 import javax.persistence.*;
+import java.util.Set;
 
 
-@Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
+@Entity
 @Table(name = "person", schema = "ulab_edu")
 public class Person {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence")
+    @SequenceGenerator(name = "sequence", sequenceName = "sequence", allocationSize = 100)
     private Long id;
-    @NonNull
+
+    @Column(nullable = false)
     private String fullName;
-    @NonNull
+
+    @Column(nullable = false)
     private String title;
+
+    @Column(nullable = false)
     private int age;
+
+//    @Column(nullable = false)
+//    private int count;
+
+    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = {
+            CascadeType.MERGE,
+            CascadeType.PERSIST,
+            CascadeType.DETACH,
+            CascadeType.REFRESH})
+    private Set<Book> bookSet;
 }

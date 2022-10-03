@@ -11,6 +11,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.Objects;
 
 @Slf4j
@@ -26,15 +27,19 @@ public class UserServiceImplTemplate implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        final String INSERT_SQL = "INSERT INTO ulab_edu.PERSON(FULL_NAME, TITLE, AGE) VALUES (?,?,?)";
+        final String GET_SEQUENCE_NEXTVAL = "SELECT nextval('sequence')";
+
+
+
+        final String INSERT_SQL = "INSERT INTO ulab_edu.PERSON(ID, FULL_NAME, TITLE, AGE) VALUES (nextval('ulab_edu.sequence'),?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(
                 connection -> {
-                    PreparedStatement ps = connection.prepareStatement(INSERT_SQL, new String[]{"id"});
+                    PreparedStatement ps = connection.prepareStatement(INSERT_SQL, new String[] { "id" });
                     ps.setString(1, userDto.getFullName());
                     ps.setString(2, userDto.getTitle());
-                    ps.setLong(3, userDto.getAge());
+                    ps.setInt(3, userDto.getAge());
                     return ps;
                 }, keyHolder);
 

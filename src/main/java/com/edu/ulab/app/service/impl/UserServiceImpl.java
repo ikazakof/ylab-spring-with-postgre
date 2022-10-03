@@ -39,6 +39,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateUser(UserDto userDto) {
         Person personFromDB = userRepository.findById(userDto.getId()).orElse(new Person());
+        log.info("Mapped user: {}", personFromDB);
+
         Person updatedPerson = userMapper.getPersonUpdatedByDto(userDto, personFromDB);
         log.info("Mapped user for update: {}", updatedPerson);
 

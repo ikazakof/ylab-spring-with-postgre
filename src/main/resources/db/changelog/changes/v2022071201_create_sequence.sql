@@ -1,0 +1,1 @@
+create sequence ulab_edu.sequence CACHE 100;
