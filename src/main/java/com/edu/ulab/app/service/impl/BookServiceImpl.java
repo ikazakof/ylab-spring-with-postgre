@@ -42,7 +42,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public boolean anyBooksWithUserIdExist(long userId) {
-        return bookRepository.existsBookByPerson_Id(userId);
+        boolean bookExist = bookRepository.existsBookByPerson_Id(userId);
+        log.info("Book with userId:{} exist - {}", userId, bookExist);
+        return bookExist;
     }
 
     @Override
@@ -77,6 +79,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public void deleteBooksByUserId(long userId) {
         bookRepository.deleteAllByPerson_Id(userId);
+        log.info("Books with UserID: {} deleted from DB", userId);
     }
 
     @Override

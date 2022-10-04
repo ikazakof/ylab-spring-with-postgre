@@ -12,13 +12,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 /**
  * Тестирование функционала {@link UserServiceImpl}.
@@ -73,14 +71,20 @@ public class UserServiceImplTest {
 
         //then
 
-        UserDto userDtoResult = userService.createUser(userDto);
-        assertEquals(1L, userDtoResult.getId());
+        UserDto resultFromService = userService.createUser(userDto);
+        assertNotNull(resultFromService);
+        assertEquals(result.getId(), resultFromService.getId());
+        assertEquals(result.getFullName(), resultFromService.getFullName());
+        assertEquals(result.getAge(), resultFromService.getAge());
+        assertEquals(result.getTitle(), resultFromService.getTitle());
+
     }
 
     @Test
     @DisplayName("Проверка существования пользователя. Должно пройти успешно.")
     void checkPerson_Test() {
         //given
+
         Long userId = 1L;
 
         //when
@@ -89,8 +93,8 @@ public class UserServiceImplTest {
 
         //then
 
-        boolean result = userService.userIdExist(userId);
-        assertTrue(result);
+        boolean resultFromService = userService.userIdExist(userId);
+        assertTrue(resultFromService);
     }
 
     @Test
@@ -113,7 +117,7 @@ public class UserServiceImplTest {
         Person savedPerson  = new Person();
         savedPerson.setId(1L);
         savedPerson.setFullName("test name updateDto");
-        savedPerson.setAge(11);
+        savedPerson.setAge(22);
         savedPerson.setTitle("test title updateDto");
 
         UserDto resultUserDto = new UserDto();
@@ -130,9 +134,63 @@ public class UserServiceImplTest {
         when(userMapper.personToUserDto(savedPerson)).thenReturn(resultUserDto);
 
         //then
+        UserDto resultFromService = userService.updateUser(userDto);
+        assertNotNull(resultFromService);
+        assertEquals(resultUserDto.getId(), resultFromService.getId());
+        assertEquals(resultUserDto.getFullName(), resultFromService.getFullName());
+        assertEquals(resultUserDto.getAge(), resultFromService.getAge());
+        assertEquals(resultUserDto.getTitle(), resultFromService.getTitle());
+    }
 
-        UserDto userDtoResult = userService.updateUser(userDto);
-        assertEquals(1L, userDtoResult.getId());
+    @Test
+    @DisplayName("Получение пользователя. Должно пройти успешно.")
+    void getPersonById_Test() {
+        //given
+
+        Long userId = 1L;
+
+        Person personFromDb  = new Person();
+        personFromDb.setId(1L);
+        personFromDb.setFullName("test name");
+        personFromDb.setAge(22);
+        personFromDb.setTitle("test title");
+
+        UserDto resultUserDto = new UserDto();
+        resultUserDto.setId(1L);
+        resultUserDto.setAge(22);
+        resultUserDto.setFullName("test name");
+        resultUserDto.setTitle("test title");
+
+        //when
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(personFromDb));
+        when(userMapper.personToUserDto(personFromDb)).thenReturn(resultUserDto);
+
+        //then
+
+        UserDto resultFromService = userService.getUserById(userId);
+        assertNotNull(resultFromService);
+        assertEquals(resultUserDto.getId(), resultFromService.getId());
+        assertEquals(resultUserDto.getFullName(), resultFromService.getFullName());
+        assertEquals(resultUserDto.getAge(), resultFromService.getAge());
+        assertEquals(resultUserDto.getTitle(), resultFromService.getTitle());
+    }
+
+    @Test
+    @DisplayName("Удаление пользователя. Должно пройти успешно")
+    void deletePersonById_Test() {
+        //given
+
+        Long userId = 1L;
+
+        //when
+
+        userService.deleteUserById(userId);
+
+        //then
+
+        verify(userRepository, times(1)).deleteById(userId);
+
     }
 
     // update

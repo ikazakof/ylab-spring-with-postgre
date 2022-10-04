@@ -28,5 +28,4 @@ public interface BookMapper {
 
     BookDto bookWithIdRequestToBookDto(BookWithIdRequest bookWithIdRequest);
 
-    BookDto booToBookDto(Book book);
 }
