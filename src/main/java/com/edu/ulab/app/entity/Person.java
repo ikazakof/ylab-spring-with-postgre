@@ -1,7 +1,10 @@
 package com.edu.ulab.app.entity;
 
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.util.Set;
 
@@ -26,8 +29,8 @@ public class Person {
     @Column(nullable = false)
     private int age;
 
-//    @Column(nullable = false)
-//    private int count;
+    @Column(nullable = false)
+    private int counter;
 
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY, cascade = {
             CascadeType.MERGE,

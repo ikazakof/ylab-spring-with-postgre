@@ -6,11 +6,13 @@ import com.edu.ulab.app.entity.Person;
 import com.edu.ulab.app.mapper.BookMapper;
 import com.edu.ulab.app.repository.BookRepository;
 import com.edu.ulab.app.service.impl.BookServiceImpl;
+import org.hibernate.PropertyValueException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -19,6 +21,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.shouldHaveThrown;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -43,7 +47,7 @@ public class BookServiceImplTest {
     void saveBook_Test() {
         //given
 
-        Person person  = new Person();
+        Person person = new Person();
         person.setId(1L);
 
         BookDto bookDto = new BookDto();
@@ -89,6 +93,31 @@ public class BookServiceImplTest {
         assertEquals(result.getPageCount(), bookDtoResult.getPageCount());
     }
 
+    @DisplayName("В книгу не добавлен пользователь. Должно выбросить ошибку")
+    @Test
+    @Rollback
+    void personNotSetToBook_thenFail() {
+        //Given
+
+        BookDto bookDto = new BookDto();
+        bookDto.setAuthor("test author");
+        bookDto.setTitle("test title");
+        bookDto.setPageCount(1000);
+
+        Book book = new Book();
+        book.setAuthor("Test Author");
+        book.setTitle("test");
+        book.setPageCount(1000);
+
+        //When
+
+        when(bookMapper.bookDtoToBook(bookDto)).thenReturn(book);
+        doThrow(PropertyValueException.class).when(bookRepository).save(book);
+
+        //Then
+
+        assertThatThrownBy(() -> shouldHaveThrown(PropertyValueException.class));
+    }
 
     @Test
     @DisplayName("Проверка существования книги. Должно пройти успешно.")
@@ -137,7 +166,7 @@ public class BookServiceImplTest {
         bookDto.setTitle("test title update");
         bookDto.setPageCount(2000);
 
-        Person person  = new Person();
+        Person person = new Person();
         person.setId(2L);
 
         Book bookFindById = new Book();
@@ -187,7 +216,7 @@ public class BookServiceImplTest {
 
         long bookId = 1L;
 
-        Person person  = new Person();
+        Person person = new Person();
         person.setId(2L);
 
         Book bookFindById = new Book();
@@ -229,7 +258,7 @@ public class BookServiceImplTest {
 
         long userId = 1L;
 
-        Person person  = new Person();
+        Person person = new Person();
         person.setId(1L);
 
         Book resultBookDto = new Book();

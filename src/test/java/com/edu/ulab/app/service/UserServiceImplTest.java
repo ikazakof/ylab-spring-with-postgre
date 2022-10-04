@@ -10,11 +10,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.shouldHaveThrown;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -44,12 +48,12 @@ public class UserServiceImplTest {
         userDto.setFullName("test name");
         userDto.setTitle("test title");
 
-        Person person  = new Person();
+        Person person = new Person();
         person.setFullName("test name");
         person.setAge(11);
         person.setTitle("test title");
 
-        Person savedPerson  = new Person();
+        Person savedPerson = new Person();
         savedPerson.setId(1L);
         savedPerson.setFullName("test name");
         savedPerson.setAge(11);
@@ -80,6 +84,29 @@ public class UserServiceImplTest {
 
     }
 
+    @DisplayName("Пользователю не присвоено имя. Должно выбросить ошибку")
+    @Test
+    @Rollback
+    void personTitleNotSet_thenFail() {
+        //Given
+        UserDto userDto = new UserDto();
+        userDto.setAge(11);
+        userDto.setFullName("test name");
+
+        Person person = new Person();
+        person.setFullName("test name");
+        person.setAge(11);
+
+
+        //When
+        when(userMapper.userDtoToPerson(userDto)).thenReturn(person);
+        doThrow(DataIntegrityViolationException.class).when(userRepository).save(person);
+
+        //Then
+
+        assertThatThrownBy(() -> shouldHaveThrown(DataIntegrityViolationException.class));
+    }
+
     @Test
     @DisplayName("Проверка существования пользователя. Должно пройти успешно.")
     void checkPerson_Test() {
@@ -108,13 +135,13 @@ public class UserServiceImplTest {
         userDto.setFullName("test name updateDto");
         userDto.setTitle("test title updateDto");
 
-        Person personFromDb  = new Person();
+        Person personFromDb = new Person();
         personFromDb.setId(1L);
         personFromDb.setFullName("test name");
         personFromDb.setAge(11);
         personFromDb.setTitle("test title");
 
-        Person savedPerson  = new Person();
+        Person savedPerson = new Person();
         savedPerson.setId(1L);
         savedPerson.setFullName("test name updateDto");
         savedPerson.setAge(22);
@@ -149,7 +176,7 @@ public class UserServiceImplTest {
 
         Long userId = 1L;
 
-        Person personFromDb  = new Person();
+        Person personFromDb = new Person();
         personFromDb.setId(1L);
         personFromDb.setFullName("test name");
         personFromDb.setAge(22);
@@ -192,6 +219,7 @@ public class UserServiceImplTest {
         verify(userRepository, times(1)).deleteById(userId);
 
     }
+
 
     // update
     // get

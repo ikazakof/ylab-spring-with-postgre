@@ -84,7 +84,7 @@ public class BookServiceImplTemplate implements BookService {
 
         Book bookAfterUpdateByDto = bookMapper.getBookUpdatedByDto(bookDto, bookFromDB);
         log.info("Mapped book for update: {}", bookAfterUpdateByDto);
-      
+
         final String UPDATE_SQL = "UPDATE ulab_edu.BOOK SET title = ?, author = ?, page_count = ?, person_id = ? WHERE id = ?";
 
         jdbcTemplate.update(UPDATE_SQL, bookAfterUpdateByDto.getTitle(), bookAfterUpdateByDto.getAuthor(),

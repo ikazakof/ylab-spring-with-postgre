@@ -11,7 +11,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.Objects;
 
 @Slf4j
@@ -33,7 +32,7 @@ public class UserServiceImplTemplate implements UserService {
 
         jdbcTemplate.update(
                 connection -> {
-                    PreparedStatement ps = connection.prepareStatement(INSERT_SQL, new String[] { "id" });
+                    PreparedStatement ps = connection.prepareStatement(INSERT_SQL, new String[]{"id"});
                     ps.setString(1, userDto.getFullName());
                     ps.setString(2, userDto.getTitle());
                     ps.setInt(3, userDto.getAge());

@@ -4,6 +4,7 @@ create table ulab_edu.person
     full_name varchar(50) not null,
     title     varchar(50) not null,
     age       integer     not null,
+    counter   integer     not null,
     constraint pk_ulab_edu_person_id primary key (id)
 );
 
@@ -14,3 +15,4 @@ comment on column ulab_edu.person.id is 'Идентификатор пользо
 comment on column ulab_edu.person.full_name is 'Полное имя';
 comment on column ulab_edu.person.title is 'Должность';
 comment on column ulab_edu.person.age is 'Возраст';
+comment on column ulab_edu.person.counter is 'Счетчик';
