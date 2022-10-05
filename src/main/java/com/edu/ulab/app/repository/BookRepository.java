@@ -19,9 +19,10 @@ public interface BookRepository extends CrudRepository<Book, Long> {
     @Query("select b from Book b where b.id = :id")
     Optional<Book> findByIdForUpdate(long id);
 
-    List<Book> findBooksByUserId(long userId);
+    List<Book> findBooksByPerson_Id(long userId);
 
-    void deleteAllByUserId(long userId);
+    void deleteAllByPerson_Id(long userId);
 
-    boolean existsBookByUserId(long userId);
+    boolean existsBookByPerson_Id(long userId);
+
 }

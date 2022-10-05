@@ -26,7 +26,8 @@ public class UserServiceImplTemplate implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        final String INSERT_SQL = "INSERT INTO ulab_edu.PERSON(FULL_NAME, TITLE, AGE) VALUES (?,?,?)";
+        final String INSERT_SQL = "INSERT INTO ulab_edu.PERSON(ID, FULL_NAME, TITLE, AGE) VALUES (nextval('ulab_edu.sequence'),?,?,?)";
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(
@@ -34,7 +35,7 @@ public class UserServiceImplTemplate implements UserService {
                     PreparedStatement ps = connection.prepareStatement(INSERT_SQL, new String[]{"id"});
                     ps.setString(1, userDto.getFullName());
                     ps.setString(2, userDto.getTitle());
-                    ps.setLong(3, userDto.getAge());
+                    ps.setInt(3, userDto.getAge());
                     return ps;
                 }, keyHolder);
 

@@ -2,6 +2,7 @@ package com.edu.ulab.app.service.impl;
 
 import com.edu.ulab.app.dto.BookDto;
 import com.edu.ulab.app.entity.Book;
+import com.edu.ulab.app.entity.Person;
 import com.edu.ulab.app.mapper.BookMapper;
 import com.edu.ulab.app.service.BookService;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ public class BookServiceImplTemplate implements BookService {
 
     @Override
     public BookDto createBook(BookDto bookDto) {
-        final String INSERT_SQL = "INSERT INTO ulab_edu.BOOK(TITLE, AUTHOR, PAGE_COUNT, USER_ID) VALUES (?,?,?,?)";
+        final String INSERT_SQL = "INSERT INTO ulab_edu.BOOK(ID, TITLE, AUTHOR, PAGE_COUNT, PERSON_ID) VALUES (nextval('ulab_edu.sequence'),?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(
@@ -67,7 +68,7 @@ public class BookServiceImplTemplate implements BookService {
 
     @Override
     public boolean anyBooksWithUserIdExist(long userId) {
-        final String SELECT_AND_COUNT_BOOK_SQL = "SELECT count(*) FROM ulab_edu.BOOK WHERE user_id = ?";
+        final String SELECT_AND_COUNT_BOOK_SQL = "SELECT count(*) FROM ulab_edu.BOOK WHERE person_id = ?";
         Long counter = jdbcTemplate.queryForObject(SELECT_AND_COUNT_BOOK_SQL, Long.class, userId);
 
         boolean bookExist = counter != null && counter != 0;
@@ -84,10 +85,10 @@ public class BookServiceImplTemplate implements BookService {
         Book bookAfterUpdateByDto = bookMapper.getBookUpdatedByDto(bookDto, bookFromDB);
         log.info("Mapped book for update: {}", bookAfterUpdateByDto);
 
-        final String UPDATE_SQL = "UPDATE ulab_edu.BOOK SET title = ?, author = ?, page_count = ?, user_id = ? WHERE id = ?";
+        final String UPDATE_SQL = "UPDATE ulab_edu.BOOK SET title = ?, author = ?, page_count = ?, person_id = ? WHERE id = ?";
 
         jdbcTemplate.update(UPDATE_SQL, bookAfterUpdateByDto.getTitle(), bookAfterUpdateByDto.getAuthor(),
-                bookAfterUpdateByDto.getPageCount(), bookAfterUpdateByDto.getUserId(), bookAfterUpdateByDto.getId());
+                bookAfterUpdateByDto.getPageCount(), bookAfterUpdateByDto.getPerson().getId(), bookAfterUpdateByDto.getId());
 
         log.info("Updated book : {}", bookAfterUpdateByDto);
 
@@ -105,7 +106,9 @@ public class BookServiceImplTemplate implements BookService {
                     book.setTitle(rs.getString("title"));
                     book.setAuthor(rs.getString("author"));
                     book.setPageCount(rs.getInt("page_count"));
-                    book.setUserId(rs.getLong("user_id"));
+                    Person transferPers = new Person();
+                    transferPers.setId(rs.getLong("person_id"));
+                    book.setPerson(transferPers);
                     return book;
                 }, id);
         BookDto bookDtoResult = bookMapper.bookToBookDto(bookResult);
@@ -116,14 +119,13 @@ public class BookServiceImplTemplate implements BookService {
 
     @Override
     public List<Long> getBooksIdsByUserId(long userId) {
-        final String SELECT_BOOKS_BY_USERID_SQL = "SELECT id FROM ulab_edu.BOOK WHERE user_id = ?";
-        List<Long> booksIds = jdbcTemplate.queryForList(SELECT_BOOKS_BY_USERID_SQL, Long.class, userId);
-        return booksIds;
+        final String SELECT_BOOKS_BY_USERID_SQL = "SELECT id FROM ulab_edu.BOOK WHERE person_id = ?";
+        return jdbcTemplate.queryForList(SELECT_BOOKS_BY_USERID_SQL, Long.class, userId);
     }
 
     @Override
     public void deleteBooksByUserId(long userId) {
-        final String DELETE_BY_USERID_SQL = "DELETE FROM ulab_edu.BOOK WHERE user_id = ?";
+        final String DELETE_BY_USERID_SQL = "DELETE FROM ulab_edu.BOOK WHERE person_id = ?";
         jdbcTemplate.update(DELETE_BY_USERID_SQL, userId);
     }
 
